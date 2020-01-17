@@ -1,0 +1,42 @@
+{
+    "name": "weareferal/asset-versioner",
+    "description": "Automatically create cache-busting versions of all your assets",
+    "type": "craft-plugin",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "asset versioner"
+    ],
+    "support": {
+        "docs": "https://github.com/weareferal/asset-versioner/blob/master/README.md",
+        "issues": "https://github.com/weareferal/asset-versioner/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Timmy O'Mahony",
+            "homepage": "https://weareferal.com"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0-RC1"
+    },
+    "autoload": {
+        "psr-4": {
+          "weareferal\\assetversioner\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Asset Versioner",
+        "handle": "asset-versioner",
+        "hasCpSettings": true,
+        "hasCpSection": true,
+        "changelogUrl": "https://raw.githubusercontent.com/weareferal/asset-versioner/master/CHANGELOG.md",
+        "components": {
+            "scan": "weareferal\\assetversioner\\services\\Scan"
+        },
+        "class": "weareferal\\assetversioner\\AssetVersioner"
+    }
+}
