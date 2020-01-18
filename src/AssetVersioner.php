@@ -19,10 +19,15 @@ use weareferal\assetversioner\events\FilesVersionedEvent;
 use Craft;
 use craft\base\Plugin;
 use craft\services\Plugins;
+use craft\services\AssetTransforms;
 use craft\events\PluginEvent;
+use craft\events\AssetTransformEvent;
+use craft\events\ModelEvent;
 use craft\console\Application as ConsoleApplication;
 use craft\web\UrlManager;
 use craft\events\RegisterUrlRulesEvent;
+use craft\elements\Asset;
+use craft\records\Asset as AssetRecord;
 
 use yii\base\Event;
 
@@ -132,6 +137,28 @@ class AssetVersioner extends Plugin
             ScanService::EVENT_AFTER_FILES_VERSIONED,
             function (FilesVersionedEvent $event) {
                 $this->keystore->update($event->versioned_files);
+            }
+        );
+
+        Event::on(
+            Asset::class,
+            Asset::EVENT_AFTER_SAVE,
+            function (ModelEvent $event) {
+                $asset = $event->sender;
+                
+                // Hash the asset
+                $file = stream_get_contents($asset->stream);
+                $hash = md5($file);
+                $pathinfo = pathinfo($asset->filename);
+                $path = $pathinfo['filename'] . '.' . $hash . '.' . $pathinfo['extension'];
+
+                // Save new filename
+                $volume = $asset->getVolume();
+                $volume->renameFile($asset->path, $path);
+                $asset->filename = $path;
+                $record = AssetRecord::findOne($asset->id);
+                $record->filename = $path;
+                $record->save(false);
             }
         );
     }
