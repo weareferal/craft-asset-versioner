@@ -200,22 +200,21 @@ class Scan extends Component
      * Perform a scan
      * 
      */
-    public function scan($dry_run = false): array {
-        $paths = $this->getPaths();
-        $files = $this->searchPaths($paths);
-        $deleted_files = $this->deleteVersions($files, $dry_run);
-        $versioned_files = $this->createVersions($files, $dry_run);
+    public function scan($dry_run = false, $delete = false): array {
+        $result = [];
+
+        $result["files"] = $this->searchPaths($this->getPaths());
+        if ($delete) {
+            $result["deleted_files"] = $this->deleteVersions($result["files"], $dry_run);
+        }
+        $result["versioned_files"] = $this->createVersions($result["files"], $dry_run);
 
         // Trigger event
         $event = new FilesVersionedEvent([
-            'versioned_files' => $versioned_files,
+            'versioned_files' => $result["versioned_files"],
         ]);
         $this->trigger(self::EVENT_AFTER_FILES_VERSIONED, $event);
 
-        return [
-            "files" => $files,
-            "deleted_files" => $deleted_files,
-            "versioned_files" => $versioned_files
-        ];
+        return $result;
     }
 }
