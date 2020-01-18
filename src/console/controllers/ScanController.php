@@ -14,7 +14,7 @@ class ScanController extends Controller
     {
         $results = AssetVersioner::getInstance()->scan->scan();
 
-        $this->stdout('Folders:' . PHP_EOL, Console::UNDERLINE);
+        $this->stdout('Files:' . PHP_EOL, Console::UNDERLINE);
         foreach($results["files"] as $file) {
             $this->stdout($file . PHP_EOL);
         }

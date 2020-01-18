@@ -22,6 +22,7 @@ use weareferal\assetversioner\events\FilesVersionedEvent;
 
 use Craft;
 use craft\base\Component;
+use craft\services\Volumes;
 
 
 /**
@@ -143,14 +144,33 @@ class Scan extends Component
      * 
      */
     private function getDefaultPaths() {
-        $paths = array();
-        $blacklist = array('cpresources', );
         $webroot = Craft::getAlias('@webroot');
+        $paths = array();
+        $excludes = array(
+            $webroot . DIRECTORY_SEPARATOR . "cpresources"
+        );
+
+        // Get volume paths for exclusion
+        $volumes = AssetVersioner::getInstance()->volumes->getAllVolumes();
+        foreach ($volumes as $volume) {
+            $path = Craft::getAlias($volume->path);
+            array_push($excludes, $path);
+        }
+
         $directories = new DirectoryIterator($webroot);
         foreach ($directories as $fileinfo) {
-            $folder = $fileinfo->getFileName();
+            if (!$fileinfo->isDir() || $fileinfo->isDot()) {
+                continue;
+            }
+            $is_valid = true;
             $path = $fileinfo->getPathName();
-            if ($fileinfo->isDir() && !$fileinfo->isDot() && !in_array($folder, $blacklist)) {
+            foreach($excludes as $exclude) {
+                if (substr($path, 0, strlen($exclude)) === $exclude) {
+                    $is_valid = false;
+                    break;
+                }
+            }
+            if ($is_valid) {
                 array_push($paths, $path);
             }
         }
