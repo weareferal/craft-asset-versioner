@@ -165,9 +165,18 @@ class Scan extends Component
      */
     private function createManifest($hashed_files) {
         $webroot = Craft::getAlias('@webroot');
+        
+        // Need to remove absolute path
+        $webroot_paths = array();
+        foreach($hashed_files as $key=>$value) {
+            $from = str_replace($webroot, '', $key);
+            $to = str_replace($webroot, '', $value);
+            $webroot_paths[$from] = $to;
+        }
+
         $path = $webroot . DIRECTORY_SEPARATOR . 'versions.json';
         $fp = fopen($path, 'w');
-        fwrite($fp, json_encode($hashed_files));
+        fwrite($fp, json_encode($webroot_paths));
         fclose($fp);
     }
 
