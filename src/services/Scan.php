@@ -44,10 +44,11 @@ class Scan extends Component
     const EVENT_AFTER_FILES_VERSIONED = 'afterFilesVersioned';
 
     /**
+     * Delete old versioned files
      * 
-     * TODO: slow
+     * TODO: improve speed
      */
-    public function deleteVersions($paths, $dry_run = false) {
+    private function deleteVersions($paths, $dry_run = false) {
         $deleted_paths = array();
         foreach($paths as $path) {
             $pathinfo = pathinfo($path);
@@ -66,9 +67,10 @@ class Scan extends Component
     }
 
     /**
+     * Copy origin files to versioned files
      * 
      */
-    public function createVersions($paths, $dry_run = false) {
+    private function createVersions($paths, $dry_run = false) {
         $webroot = Craft::getAlias('@webroot');
         $version_paths = array();
         foreach($paths as $path) {
@@ -85,27 +87,27 @@ class Scan extends Component
         return $version_paths;
     }
 
-   
-
     /**
-     * /foo/bar/baz.pdf -> /foo/bar/baz.vh5ksubnw.pdf
+     * Create a hash
      */
-    public function generateHash($file) {
+    private function generateHash($file) {
         return md5_file($file);
     }
 
     /**
-     * 
+     * Add a hash to a path
      */
-    public function generateHashedPath($file, $hash) {
+    private function generateHashedPath($file, $hash) {
         $parts = pathinfo($file);
         return $parts['dirname'] . DIRECTORY_SEPARATOR . $parts['filename'] . '.' . $hash . '.' . $parts['extension'];
     }
 
      /**
+     * Search a particular path for files and filter valid ones
      * 
+     * TODO: add setting that allows you to specify extensions
      */
-    public function searchPath($path) {
+    private function searchPath($path) {
         $extensions = ["png", "jpeg", "jpg", "svg", "webp", "css", "js", "eot", "woff", "woff2", "tff", "map"];
         $extensions_str = join('|', $extensions);
         // 3 parts
@@ -129,7 +131,7 @@ class Scan extends Component
     }
 
     /**
-     * 
+     * Search a number of paths for files
      */
     private function searchPaths($paths) {
         $files = array();
@@ -141,7 +143,9 @@ class Scan extends Component
     }
 
     /**
-     * 
+     * Get paths from the webroot to search for files
+     * - ignore volume paths
+     * - ignore cpresources
      */
     private function getDefaultPaths() {
         $webroot = Craft::getAlias('@webroot');
@@ -179,7 +183,9 @@ class Scan extends Component
 
     
     /**
+     * Get the paths of folders we want to scan
      * 
+     * TODO: add a setting that allows you to specify paths
      */
     private function getPaths() {
         $folders = [];
@@ -191,6 +197,7 @@ class Scan extends Component
 
     
     /**
+     * Perform a scan
      * 
      */
     public function scan($dry_run = false): array {
