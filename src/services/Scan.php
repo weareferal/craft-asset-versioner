@@ -17,6 +17,8 @@ use RegexIterator;
 use IteratorIterator;
 
 use weareferal\assetversioner\AssetVersioner;
+use weareferal\assetversioner\services\KeyStore;
+use weareferal\assetversioner\events\FilesVersionedEvent;
 
 use Craft;
 use craft\base\Component;
@@ -37,6 +39,9 @@ use craft\base\Component;
  */
 class Scan extends Component
 {
+
+    const EVENT_AFTER_FILES_VERSIONED = 'afterFilesVersioned';
+
     /**
      * 
      * TODO: slow
@@ -63,6 +68,7 @@ class Scan extends Component
      * 
      */
     public function createVersions($paths, $dry_run = false) {
+        $webroot = Craft::getAlias('@webroot');
         $version_paths = array();
         foreach($paths as $path) {
             $hash = $this->generateHash($path);
@@ -70,7 +76,10 @@ class Scan extends Component
             if (!$dry_run) {
                 copy($path, $version_path);
             }
-            $version_paths[$path] = $version_path;
+            // Relative paths only
+            $key = str_replace($webroot, '', $path);
+            $value = str_replace($webroot, '', $version_path);
+            $version_paths[$key] = $value;
         }
         return $version_paths;
     }
@@ -160,65 +169,26 @@ class Scan extends Component
         return $folders;
     }
 
+    
     /**
      * 
      */
-    private function createManifest($hashed_files) {
-        $webroot = Craft::getAlias('@webroot');
-        
-        // Need to remove absolute path
-        $webroot_paths = array();
-        foreach($hashed_files as $key=>$value) {
-            $from = str_replace($webroot, '', $key);
-            $to = str_replace($webroot, '', $value);
-            $webroot_paths[$from] = $to;
-        }
-
-        $path = $webroot . DIRECTORY_SEPARATOR . 'versions.json';
-        $fp = fopen($path, 'w');
-        fwrite($fp, json_encode($webroot_paths));
-        fclose($fp);
-    }
-
-    /**
-     * 
-     */
-    public function scan($dry_run = false): bool {
-        
+    public function scan($dry_run = false): array {
         $paths = $this->getPaths();
-
-        echo "Paths searched:" . PHP_EOL;
-        foreach($paths as $path) {
-            echo $path . PHP_EOL;
-        }
-        echo PHP_EOL;
-
         $files = $this->searchPaths($paths);
+        $deleted_files = $this->deleteVersions($files, $dry_run);
+        $versioned_files = $this->createVersions($files, $dry_run);
 
-        echo "Discovered files:" . PHP_EOL;
-        foreach($files as $file) {
-            echo $file . PHP_EOL;
-        }
-        echo PHP_EOL;
+        // Trigger event
+        $event = new FilesVersionedEvent([
+            'versioned_files' => $versioned_files,
+        ]);
+        $this->trigger(self::EVENT_AFTER_FILES_VERSIONED, $event);
 
-        $delete_files = $this->deleteVersions($files, $dry_run);
-
-        echo "Deleted files:" . PHP_EOL;
-        foreach($delete_files as $file) {
-            echo $file . PHP_EOL;
-        }
-        echo PHP_EOL;
-
-        $hashed_files = $this->createVersions($files, $dry_run);
-
-        echo "Versioned files:" . PHP_EOL;
-        foreach($hashed_files as $from => $to) {
-            echo $from . ' > ' . $to . PHP_EOL;
-        }
-        echo PHP_EOL;
-
-        $this->createManifest($hashed_files);
-
-        return true;
+        return [
+            "files" => $files,
+            "deleted_files" => $deleted_files,
+            "versioned_files" => $versioned_files
+        ];
     }
 }

@@ -17,10 +17,16 @@
 
 {% do view.registerAssetBundle("weareferal\\assetversioner\\assetbundles\\assetversioner\\AssetVersionerAsset") %}
 
-{{ forms.textField({
-    label: 'Some Field',
-    instructions: 'Enter some setting here.',
-    id: 'someAttribute',
-    name: 'someAttribute',
-    value: settings['someAttribute']})
-}}
+{{ forms.selectField({
+    first: true,
+    instructions: "To be able to efficiently find the hashed versions of your files they need to be stored in memory/cache."|t('asset-versioner'),
+    label: "Keystore Backend"|t('asset-versioner'),
+    id: 'keystoreBackend',
+    name: 'keystoreBackend',
+    options: [
+        { label: 'APC', value: 'apc' }
+    ],
+    value: settings.keystoreBackend,
+    required: true,
+    errors: settings.getErrors('keystoreBackend')
+}) }}

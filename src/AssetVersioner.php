@@ -11,7 +11,10 @@
 namespace weareferal\assetversioner;
 
 use weareferal\assetversioner\services\Scan as ScanService;
+use weareferal\assetversioner\services\KeyStore as KeyStoreService;
 use weareferal\assetversioner\models\Settings;
+use weareferal\assetversioner\twigextensions\AssetVersionerTwigExtensions;
+use weareferal\assetversioner\events\FilesVersionedEvent;
 
 use Craft;
 use craft\base\Plugin;
@@ -88,6 +91,13 @@ class AssetVersioner extends Plugin
             $this->controllerNamespace = 'weareferal\assetversioner\console\controllers';
         }
 
+        $this->setComponents([
+            'scan' => ScanService::class,
+            'keystore' => KeyStoreService::create()
+        ]);
+
+        Craft::$app->view->registerTwigExtension(new AssetVersionerTwigExtensions());
+
         // Register our site routes
         Event::on(
             UrlManager::class,
@@ -117,31 +127,12 @@ class AssetVersioner extends Plugin
             }
         );
 
-/**
- * Logging in Craft involves using one of the following methods:
- *
- * Craft::trace(): record a message to trace how a piece of code runs. This is mainly for development use.
- * Craft::info(): record a message that conveys some useful information.
- * Craft::warning(): record a warning message that indicates something unexpected has happened.
- * Craft::error(): record a fatal error that should be investigated as soon as possible.
- *
- * Unless `devMode` is on, only Craft::warning() & Craft::error() will log to `craft/storage/logs/web.log`
- *
- * It's recommended that you pass in the magic constant `__METHOD__` as the second parameter, which sets
- * the category to the method (prefixed with the fully qualified class name) where the constant appears.
- *
- * To enable the Yii debug toolbar, go to your user account in the AdminCP and check the
- * [] Show the debug toolbar on the front end & [] Show the debug toolbar on the Control Panel
- *
- * http://www.yiiframework.com/doc-2.0/guide-runtime-logging.html
- */
-        Craft::info(
-            Craft::t(
-                'asset-versioner',
-                '{name} plugin loaded',
-                ['name' => $this->name]
-            ),
-            __METHOD__
+        Event::on(
+            ScanService::class,
+            ScanService::EVENT_AFTER_FILES_VERSIONED,
+            function (FilesVersionedEvent $event) {
+                $this->keystore->update($event->versioned_files);
+            }
         );
     }
 
