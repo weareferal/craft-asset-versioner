@@ -8,7 +8,7 @@ use Craft;
 use craft\base\Model;
 class Settings extends Model
 {
-    public $keystoreBackend = 'database';
+    public $keystoreBackend = 'default';
 
     public function rules()
     {

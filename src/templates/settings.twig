@@ -1,21 +1,4 @@
-{# @var craft \craft\web\twig\variables\CraftVariable #}
-{#
-/**
- * Asset Versioner plugin for Craft CMS 3.x
- *
- * Asset Versioner Settings.twig
- *
- * @author    Timmy O'Mahony
- * @copyright Copyright (c) 2020 Timmy O'Mahony
- * @link      https://weareferal.com
- * @package   AssetVersioner
- * @since     1.0.0
- */
-#}
-
 {% import "_includes/forms" as forms %}
-
-{% do view.registerAssetBundle("weareferal\\assetversioner\\assetbundles\\assetversioner\\AssetVersionerAsset") %}
 
 {{ forms.selectField({
     first: true,
@@ -24,7 +7,8 @@
     id: 'keystoreBackend',
     name: 'keystoreBackend',
     options: [
-        { label: 'APC', value: 'apc' }
+        { label: 'Default', value: 'default' },
+        { label: 'Database', value: 'database' }
     ],
     value: settings.keystoreBackend,
     required: true,

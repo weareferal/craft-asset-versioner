@@ -4,6 +4,7 @@ namespace weareferal\assetversioner\services;
 
 use weareferal\assetversioner\AssetVersioner;
 use weareferal\assetversioner\services\backends\DatabaseKeyStore;
+use weareferal\assetversioner\services\backends\DefaultKeyStore;
 
 use Craft;
 use craft\base\Component;
@@ -19,6 +20,9 @@ class KeyStore extends Component {
         switch ($backend) {
             case "database":
                 return DatabaseKeyStore::class;
+                break;
+            default:
+                return DefaultKeyStore::class;
                 break;
         } 
     }
