@@ -14,11 +14,13 @@ use RecursiveDirectoryIterator;
 use DirectoryIterator;
 use RecursiveIteratorIterator;
 use RegexIterator;
+use IteratorIterator;
 
 use weareferal\assetversioner\AssetVersioner;
 
 use Craft;
 use craft\base\Component;
+
 
 /**
  * Scan Service
@@ -35,88 +37,102 @@ use craft\base\Component;
  */
 class Scan extends Component
 {
-    
-    // TODO move to utils
-    public function create_regex($extensions_array) {
-        return "";
+    /**
+     * 
+     * TODO: slow
+     */
+    public function deleteVersions($paths, $dry_run = false) {
+        $deleted_paths = array();
+        foreach($paths as $path) {
+            $pathinfo = pathinfo($path);
+            $regex = "/^" . preg_quote($pathinfo['filename'], '/') . "\.\w{32}\." . preg_quote($pathinfo['extension']) . "$/";
+            $directory_files = new DirectoryIterator($pathinfo['dirname']);
+            $matched_files = new RegexIterator($directory_files, $regex);
+            foreach($matched_files as $file) {
+                $path = $file->getPathName();
+                if (!$dry_run) {
+                    unlink($path);
+                }
+                array_push($deleted_paths, $path);
+            }
+        }
+        return $deleted_paths;
     }
 
-    // TODO: remove all existing files that contain a hash
-    public function deleteOldVersions($folder) {
-
-    }
-
-    public function createVersions($paths) {
-        $hashed_paths = array();
+    /**
+     * 
+     */
+    public function createVersions($paths, $dry_run = false) {
+        $version_paths = array();
         foreach($paths as $path) {
             $hash = $this->generateHash($path);
-            $newPath = $this->generateHashedPath($path, $hash);
-            array_push($hashed_paths, $newPath);
-            // copy($file, $newPath);
+            $version_path = $this->generateHashedPath($path, $hash);
+            if (!$dry_run) {
+                copy($path, $version_path);
+            }
+            $version_paths[$path] = $version_path;
         }
-        return $hashed_paths;
+        return $version_paths;
     }
 
-    // Find all files in a folder. 
-    // TODO: must exclude existing versioned files
-    public function findFiles($path) {
-        $path = $path . "/";
+   
+
+    /**
+     * /foo/bar/baz.pdf -> /foo/bar/baz.vh5ksubnw.pdf
+     */
+    public function generateHash($file) {
+        return md5_file($file);
+    }
+
+    /**
+     * 
+     */
+    public function generateHashedPath($file, $hash) {
+        $parts = pathinfo($file);
+        return $parts['dirname'] . DIRECTORY_SEPARATOR . $parts['filename'] . '.' . $hash . '.' . $parts['extension'];
+    }
+
+     /**
+     * 
+     */
+    public function searchPath($path) {
         $extensions = ["png", "jpeg", "jpg", "svg", "webp", "css", "js", "eot", "woff", "woff2", "tff", "map"];
         $extensions_str = join('|', $extensions);
-        $regex_str = "/^.*\.(" . $extensions_str . ")$/i";
-        $directory = new RecursiveDirectoryIterator($path);
-        $all_files = new RecursiveIteratorIterator($directory);
-        $filtered_files = new RegexIterator($all_files, $regex_str);
+        // 3 parts
+        // - main group (at the end) is simply matching a file path
+        // - negative lookahead (first) is saying "don't match if the string
+        //   before the extension is 32 chars long
+        // - positive lookahead (second) is saying "match if ends in one of 
+        //   out extensions
+        //$regex_str = "/^.*\.(" . $extensions_str . ")$/i";
+        $regex_str = "/(?!^.*\.\w{32}\.[^\.]+$)(?=^.*\.(?:" . $extensions_str . ")$)^((?:\/[^\/]+)+)$/";
+        $directory_files = new RecursiveDirectoryIterator($path);
+        $all_files = new RecursiveIteratorIterator($directory_files);
+        $matched_files = new RegexIterator($all_files, $regex_str);
 
         $files = array();
-        foreach($filtered_files as $file) {
+        foreach($matched_files as $file) {
             $path = $file->getPathName();
             array_push($files, $path);
         }
         return $files;
     }
 
-    // /foo/bar/baz.pdf -> /foo/bar/baz.vh5ksubnw.pdf
-    public function generateHash($file) {
-        return md5_file($file);
-    }
-
-    public function generateHashedPath($file, $hash) {
-        $parts = pathinfo($file);
-        return $parts['dirname'] . DIRECTORY_SEPARATOR . $parts['filename'] . '.' . $hash . '.' . $parts['extension'];
-    }
-
-    // public function scanFiles($paths)
-    // {
-    //     // Hash files
-    //     $results = [];
-    //     foreach($files as $file) {
-    //         $hash = $this->generateHash($file);
-    //         $newPath = $this->generateHashedPath($file, $hash);
-    //         echo $newPath;
-    //         array_push($results, $newPath);
-    //         // copy($file, $newPath);
-    //     }
-
-    //     return $results;
-    // }
-
-    // Search the paths for files to version
-    private function gatherFiles($paths) {
+    /**
+     * 
+     */
+    private function searchPaths($paths) {
         $files = array();
         foreach ($paths as $path) {
-            $new_files = $this->findFiles($path);
+            $new_files = $this->searchPath($path);
             $files = array_merge($new_files, $files);
         }
         return $files;
     }
 
-    // Get the extensions we are interested in versioning
-    // private getExtensions() {
-        
-    // }
-
-    // Return all valid directories from the web folder 
+    /**
+     * 
+     */
     private function getDefaultPaths() {
         $paths = array();
         $blacklist = array('cpresources', );
@@ -132,8 +148,10 @@ class Scan extends Component
         return $paths;
     }
 
-    // Return the folders we want scanned and versioned. If none specified,
-    // just use the web folder. Any supplied folders must be within
+    
+    /**
+     * 
+     */
     private function getPaths() {
         $folders = [];
         if (count($folders) <= 0) {
@@ -142,39 +160,56 @@ class Scan extends Component
         return $folders;
     }
 
-    public function scan(): bool {
+    /**
+     * 
+     */
+    private function createManifest($hashed_files) {
+        $webroot = Craft::getAlias('@webroot');
+        $path = $webroot . DIRECTORY_SEPARATOR . 'versions.json';
+        $fp = fopen($path, 'w');
+        fwrite($fp, json_encode($hashed_files));
+        fclose($fp);
+    }
+
+    /**
+     * 
+     */
+    public function scan($dry_run = false): bool {
+        
         $paths = $this->getPaths();
 
-        echo "Paths to search:" . PHP_EOL;
+        echo "Paths searched:" . PHP_EOL;
         foreach($paths as $path) {
             echo $path . PHP_EOL;
         }
         echo PHP_EOL;
 
-        $files = $this->gatherFiles($paths);
+        $files = $this->searchPaths($paths);
 
-        echo "Files to hash:" . PHP_EOL;
+        echo "Discovered files:" . PHP_EOL;
         foreach($files as $file) {
             echo $file . PHP_EOL;
         }
         echo PHP_EOL;
 
-        $hashed_files = $this->createVersions($files);
+        $delete_files = $this->deleteVersions($files, $dry_run);
 
-        echo "Hashed files:" . PHP_EOL;
-        foreach($hashed_files as $file) {
+        echo "Deleted files:" . PHP_EOL;
+        foreach($delete_files as $file) {
             echo $file . PHP_EOL;
         }
         echo PHP_EOL;
 
-        // $newFiles = array();
-        // foreach($files as $file) {
-        //     $hash = $this->generateHash($file);
-        //     $newPath = $this->generateHashedPath($file, $hash);
-        //     array_push($newFiles, $newPath);
-        // }
+        $hashed_files = $this->createVersions($files, $dry_run);
 
-        // $this->hasFiles($files);
+        echo "Versioned files:" . PHP_EOL;
+        foreach($hashed_files as $from => $to) {
+            echo $from . ' > ' . $to . PHP_EOL;
+        }
+        echo PHP_EOL;
+
+        $this->createManifest($hashed_files);
+
         return true;
     }
 }
