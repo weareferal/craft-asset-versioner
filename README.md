@@ -1,6 +1,6 @@
 # Asset Versioner plugin for Craft CMS 3.x
 
-Backup and restore your database and volume assets across environments from the comfort of the Craft Control Panel.
+Automatically generate unique hashed versions of static files and assets for efficient and reliable browser caching
 
 ![Asset Versioner Logo](resources/img/plugin-logo.png)
 
