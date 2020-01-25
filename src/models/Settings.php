@@ -10,7 +10,6 @@ use craft\base\Model;
 
 class Settings extends Model
 {
-    public $keystoreBackend = 'default';
     public $staticVersioningEnabled = false;
     public $assetVersioningEnabled = false;
     public $staticVersioningExtensions = "png,jpeg,jpg,svg,webp,css,js,eot,woff,woff2,tff,map";
@@ -28,7 +27,6 @@ class Settings extends Model
             ],
             [
                 [ 
-                    'keystoreBackend',
                     'staticVersioningExtensions',
                     'assetVersioningExtensions',
                 ],
@@ -36,7 +34,6 @@ class Settings extends Model
             ],
             [
                 [ 
-                    'keystoreBackend',
                     'staticVersioningExtensions',
                     'assetVersioningExtensions',
                 ],

@@ -11,23 +11,6 @@
 {% from _self import configWarning %}
 
 <section>
-    {{ forms.selectField({
-        id: 'keystoreBackend',
-        name: 'keystoreBackend',
-        instructions: "By default the Yii cache setting is used to store filename to version mappings"|t('asset-versioner'),
-        label: "Keystore Backend"|t('asset-versioner'),
-        options: [
-            { label: 'Default', value: 'default' },
-            { label: 'Database', value: 'database' }
-        ],
-        value: settings.keystoreBackend,
-        required: true,
-        errors: settings.getErrors('keystoreBackend'),
-        warning: configWarning('keystoreBackend', 'asset-versioner')
-    }) }}
-    <br>
-</section>
-<section>
     <h2 data-icon="screwdriver" class="icon">{{ "Static File Versioning"|t('asset-versioner') }}</h2>
     <hr>
     {{ forms.lightswitchField({

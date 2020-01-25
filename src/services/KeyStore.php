@@ -16,14 +16,7 @@ interface KeyStoreInterface {
 
 class KeyStore extends Component {
     public static function create() {
-        $backend = AssetVersioner::getInstance()->getSettings()->keystoreBackend;
-        switch ($backend) {
-            case "database":
-                return DatabaseKeyStore::class;
-                break;
-            default:
-                return DefaultKeyStore::class;
-                break;
-        } 
+        // TODO: Could be a setting
+        return DefaultKeyStore::class;
     }
 }
