@@ -108,7 +108,8 @@ class Scan extends Component
      * TODO: add setting that allows you to specify extensions
      */
     private function searchPath($path) {
-        $extensions = ["png", "jpeg", "jpg", "svg", "webp", "css", "js", "eot", "woff", "woff2", "tff", "map"];
+        $extensions = AssetVersioner::getInstance()->getSettings()->staticVersioningExtensions;
+        $extensions = explode(",", $extensions);
         $extensions_str = join('|', $extensions);
         // 3 parts
         // - main group (at the end) is simply matching a file path
@@ -116,7 +117,6 @@ class Scan extends Component
         //   before the extension is 32 chars long
         // - positive lookahead (second) is saying "match if ends in one of 
         //   out extensions
-        //$regex_str = "/^.*\.(" . $extensions_str . ")$/i";
         $regex_str = "/(?!^.*\.\w{32}\.[^\.]+$)(?=^.*\.(?:" . $extensions_str . ")$)^((?:\/[^\/]+)+)$/";
         $directory_files = new RecursiveDirectoryIterator($path);
         $all_files = new RecursiveIteratorIterator($directory_files);
@@ -200,7 +200,7 @@ class Scan extends Component
      * Perform a scan
      * 
      */
-    public function scan($dry_run = false, $delete = false): array {
+    public function scan($dry_run=false, $delete=false): array {
         $result = [];
 
         $result["files"] = $this->searchPaths($this->getPaths());

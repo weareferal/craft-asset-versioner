@@ -12,6 +12,11 @@ class ScanController extends Controller
 {
     public function actionIndex()
     {
+        if (!AssetVersioner::getInstance()->getSettings()->staticVersioningEnabled) {
+            $this->stdout('Static file versioning is not enabled. Please enable via either a config setting or via the Control Panel settings' . PHP_EOL, Console::FG_RED, Console::UNDERLINE);
+            return 0;
+        }
+
         $result = AssetVersioner::getInstance()->scan->scan();
 
         $this->stdout('Files:' . PHP_EOL, Console::UNDERLINE);

@@ -1,16 +1,80 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.selectField({
-    first: true,
-    instructions: "To be able to efficiently find the hashed versions of your files they need to be stored in memory/cache."|t('asset-versioner'),
-    label: "Keystore Backend"|t('asset-versioner'),
-    id: 'keystoreBackend',
-    name: 'keystoreBackend',
-    options: [
-        { label: 'Default', value: 'default' },
-        { label: 'Database', value: 'database' }
-    ],
-    value: settings.keystoreBackend,
-    required: true,
-    errors: settings.getErrors('keystoreBackend')
-}) }}
+{% macro configWarning(setting, file) -%}
+    {%- set configArray = craft.app.config.getConfigFromFile(file) -%}
+    {%- if configArray[setting] is defined -%}
+        {{- "This is being overridden by the `#{setting}` setting in the `config/#{file}.php` file." |raw }}
+    {%- else -%}
+        {{ false }}
+    {%- endif -%}
+{%- endmacro %}
+{% from _self import configWarning %}
+
+<section>
+    {{ forms.selectField({
+        id: 'keystoreBackend',
+        name: 'keystoreBackend',
+        instructions: "By default the Yii cache setting is used to store filename to version mappings"|t('asset-versioner'),
+        label: "Keystore Backend"|t('asset-versioner'),
+        options: [
+            { label: 'Default', value: 'default' },
+            { label: 'Database', value: 'database' }
+        ],
+        value: settings.keystoreBackend,
+        required: true,
+        errors: settings.getErrors('keystoreBackend'),
+        warning: configWarning('keystoreBackend', 'asset-versioner')
+    }) }}
+    <br>
+</section>
+<section>
+    <h2 data-icon="screwdriver" class="icon">{{ "Static File Versioning"|t('asset-versioner') }}</h2>
+    <hr>
+    {{ forms.lightswitchField({
+        id: 'staticVersioningEnabled',
+        name: 'staticVersioningEnabled',
+        label: "Enabled"|t('asset-versioner'),
+        instructions: "Allow static files (JS, CSS, fonts etc.) to be automatically versioned"|t('asset-versioner'),
+        on: settings.staticVersioningEnabled,
+        errors: settings.getErrors('staticVersioningEnabled'),
+        warning: configWarning('staticVersioningEnabled', 'asset-versioner')
+    }) }}
+
+    {{ forms.textField({
+        id: 'staticVersioningExtensions',
+        name: 'staticVersioningExtensions',
+        label: "Extensions"|t('asset-versioner'),
+        instructions: "A comma-separated of extensions to automatically version"|t('asset-versioner'),
+        placeholder: 'js,css,png,jpg',
+        value: settings.staticVersioningExtensions,
+        required: true,
+        errors: settings.getErrors('staticVersioningExtensions'),
+        warning: configWarning('staticVersioningExtensions', 'asset-versioner')
+    }) }}
+    <br>
+</section>
+<section>
+    <h2 data-icon="asset" class="icon">{{ "Asset File Versioning"|t('asset-versioner') }}</h2>
+    <hr>
+    {{ forms.lightswitchField({
+        id: 'assetVersioningEnabled',
+        name: 'assetVersioningEnabled',
+        label: "Enabled"|t('asset-versioner'),
+        instructions: "Allow uploaded asset files to be automatically versioned"|t('asset-versioner'),
+        on: settings.assetVersioningEnabled,
+        errors: settings.getErrors('assetVersioningEnabled'),
+        warning: configWarning('assetVersioningEnabled', 'asset-versioner')
+    }) }}
+
+    {{ forms.textField({
+        id: 'assetVersioningExtensions',
+        name: 'assetVersioningExtensions',
+        label: "Extensions"|t('asset-versioner'),
+        instructions: "A comma-separated of extensions to automatically version"|t('asset-versioner'),
+        placeholder: 'js,css,png,jpg',
+        value: settings.assetVersioningExtensions,
+        required: true,
+        errors: settings.getErrors('assetVersioningExtensions'),
+        warning: configWarning('assetVersioningExtensions', 'asset-versioner')
+    }) }}
+</section>
