@@ -86,6 +86,5 @@ Currently, this plugin only works with local files in you filesystem's webroot.
 
 - Add support for non-local volumes
 - Add ability to select folders
-- Add ability to control extensions
 
 Brought to you by [Feral](https://weareferal.com)

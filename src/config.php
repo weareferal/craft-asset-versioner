@@ -23,4 +23,12 @@
  */
 
 return [
+    'staging' => [
+        'staticVersioningEnabled' => true,
+        'assetVersioningEnabled' => true
+    ],
+    'production' => [
+        'staticVersioningEnabled' => true,
+        'assetVersioningEnabled' => true
+    ]
 ];

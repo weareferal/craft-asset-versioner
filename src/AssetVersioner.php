@@ -7,17 +7,11 @@ use weareferal\assetversioner\services\KeyStore as KeyStoreService;
 use weareferal\assetversioner\models\Settings;
 use weareferal\assetversioner\twigextensions\AssetVersionerTwigExtensions;
 use weareferal\assetversioner\events\FilesVersionedEvent;
-use weareferal\assetversioner\utilities\assetutilities\versionAsset;
+
 use Craft;
 use craft\base\Plugin;
-use craft\services\Plugins;
-use craft\services\AssetTransforms;
-use craft\events\PluginEvent;
-use craft\events\AssetTransformEvent;
 use craft\events\ModelEvent;
 use craft\console\Application as ConsoleApplication;
-use craft\web\UrlManager;
-use craft\events\RegisterUrlRulesEvent;
 use craft\elements\Asset;
 use craft\records\Asset as AssetRecord;
 
@@ -34,7 +28,6 @@ class AssetVersioner extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        // Add in our console commands
         if (Craft::$app instanceof ConsoleApplication) {
             $this->controllerNamespace = 'weareferal\assetversioner\console\controllers';
         }
@@ -43,9 +36,10 @@ class AssetVersioner extends Plugin
             'scan' => ScanService::class,
             'keystore' => KeyStoreService::create()
         ]);
-
+        
         Craft::$app->view->registerTwigExtension(new AssetVersionerTwigExtensions());
 
+        // When a scan takes place, update the keystore with the new values
         Event::on(
             ScanService::class,
             ScanService::EVENT_AFTER_FILES_VERSIONED,

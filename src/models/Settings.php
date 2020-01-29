@@ -12,6 +12,7 @@ class Settings extends Model
 {
     public $staticVersioningEnabled = false;
     public $assetVersioningEnabled = false;
+    public $staticVersioningPrefix = 'versions';
     public $staticVersioningExtensions = "png,jpeg,jpg,svg,webp,css,js,eot,woff,woff2,tff,map";
     public $assetVersioningExtensions = "jpg,jpeg,png";
 
@@ -28,6 +29,7 @@ class Settings extends Model
             [
                 [ 
                     'staticVersioningExtensions',
+                    'staticVersioningPrefix',
                     'assetVersioningExtensions',
                 ],
                 'string',

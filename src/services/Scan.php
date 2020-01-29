@@ -7,7 +7,6 @@
  * @link      https://weareferal.com
  * @copyright Copyright (c) 2020 Timmy O'Mahony
  */
-
 namespace weareferal\assetversioner\services;
 
 use RecursiveDirectoryIterator;
@@ -44,12 +43,16 @@ class Scan extends Component
     const EVENT_AFTER_FILES_VERSIONED = 'afterFilesVersioned';
 
     /**
-     * Delete old versioned files
+     * Search for, and delete, any old versions of a set of paths 
      * 
-     * TODO: improve speed
+     * TODO Improve the performance 
+     *  
+     * @param array $paths An array of paths (without hashes) to search for
+     * @param boolean $dry_run If enabled, do everythign except deleting
+     * @return array An array of paths that were successfully deleted
      */
-    private function deleteVersions($paths, $dry_run = false) {
-        $deleted_paths = array();
+    private function deleteVersions($paths, $dry_run = false) : array {
+        $deleted_paths = []; 
         foreach($paths as $path) {
             $pathinfo = pathinfo($path);
             $regex = "/^" . preg_quote($pathinfo['filename'], '/') . "\.\w{32}\." . preg_quote($pathinfo['extension']) . "$/";
@@ -66,16 +69,32 @@ class Scan extends Component
         return $deleted_paths;
     }
 
+    
+
     /**
-     * Copy origin files to versioned files
+     * Add a hash to a path
      * 
+     * @param string $file The absolute path
+     * @return string The original path with a suffixed md5 32-char hash
      */
-    private function createVersions($paths, $dry_run = false) {
+    private function generateHashedPath($path) : string {
+        $hash = md5_file($path);
+        $parts = pathinfo($path);
+        return $parts['dirname'] . DIRECTORY_SEPARATOR . $parts['filename'] . '.' . $hash . '.' . $parts['extension'];
+    }
+
+    /**
+     * Create new hashed versions of file paths
+     * 
+     * @param array $paths An array of paths to hash and copy
+     * @param boolean $dry_run If enabled, do everything except copy paths 
+     * @return array An array of new hashed paths
+     */
+    private function createVersions($paths, $dry_run = false) : array {
         $webroot = Craft::getAlias('@webroot');
-        $version_paths = array();
+        $version_paths = [];
         foreach($paths as $path) {
-            $hash = $this->generateHash($path);
-            $version_path = $this->generateHashedPath($path, $hash);
+            $version_path = $this->generateHashedPath($path);
             if (!$dry_run) {
                 copy($path, $version_path);
             }
@@ -88,81 +107,75 @@ class Scan extends Component
     }
 
     /**
-     * Create a hash
-     */
-    private function generateHash($file) {
-        return md5_file($file);
-    }
-
-    /**
-     * Add a hash to a path
-     */
-    private function generateHashedPath($file, $hash) {
-        $parts = pathinfo($file);
-        return $parts['dirname'] . DIRECTORY_SEPARATOR . $parts['filename'] . '.' . $hash . '.' . $parts['extension'];
-    }
-
-     /**
-     * Search a particular path for files and filter valid ones
+     * Search a particular directory recursively for relevant asset files
      * 
-     * TODO: add setting that allows you to specify extensions
+     * @param string $dir The absolute path to the directory to search
+     * @return array An array of absolute file paths 
      */
-    private function searchPath($path) {
+    private function searchDir($dir) : array{
+        // Create regex to filter folder contents by
+        //
+        // Regex explanation:
+        // - Main group (at the end) is simply matching a file path
+        // - Negative lookahead (first) is saying "don't match if the string
+        //   before the extension is 32 chars long
+        // - Positive lookahead (second) is saying "match if ends in one of 
+        //   out extensions 
         $extensions = AssetVersioner::getInstance()->getSettings()->staticVersioningExtensions;
         $extensions = explode(",", $extensions);
         $extensions_str = join('|', $extensions);
-        // 3 parts
-        // - main group (at the end) is simply matching a file path
-        // - negative lookahead (first) is saying "don't match if the string
-        //   before the extension is 32 chars long
-        // - positive lookahead (second) is saying "match if ends in one of 
-        //   out extensions
         $regex_str = "/(?!^.*\.\w{32}\.[^\.]+$)(?=^.*\.(?:" . $extensions_str . ")$)^((?:\/[^\/]+)+)$/";
-        $directory_files = new RecursiveDirectoryIterator($path);
-        $all_files = new RecursiveIteratorIterator($directory_files);
-        $matched_files = new RegexIterator($all_files, $regex_str);
 
-        $files = array();
-        foreach($matched_files as $file) {
-            $path = $file->getPathName();
-            array_push($files, $path);
+        $paths = [];
+        $dir_paths = new RecursiveDirectoryIterator($dir);
+        $all_paths = new RecursiveIteratorIterator($dir_paths);
+        $matched_paths = new RegexIterator($all_paths, $regex_str);
+        foreach($matched_paths as $path) {
+            array_push($paths, $path->getPathName());
         }
-        return $files;
+        return $paths;
     }
 
     /**
-     * Search a number of paths for files
+     * Search directories for file paths
+     * 
+     * @param array $dirs An array of directories to search for files
+     * @return array An array of file paths
      */
-    private function searchPaths($paths) {
-        $files = array();
-        foreach ($paths as $path) {
-            $new_files = $this->searchPath($path);
-            $files = array_merge($new_files, $files);
+    private function searchDirs($dirs) : array {
+        $paths = [];
+        foreach ($dirs as $dir) {
+            $new_paths = $this->searchDir($dir);
+            $paths= array_merge($new_paths, $paths);
         }
-        return $files;
+        return $paths;
     }
 
     /**
-     * Get paths from the webroot to search for files
-     * - ignore volume paths
-     * - ignore cpresources
+     * Return eligable folders to search for files within
+     * 
+     * - Filters all files by the current `staticVersioningExtensions` setting
+     * - Ignores volume paths 
+     * - Ignores `cpresources` folder
+     * 
+     * @return array an array of absolute paths to directories
      */
-    private function getDefaultPaths() {
+    private function getDefaultDirs(): array {
         $webroot = Craft::getAlias('@webroot');
-        $paths = array();
-        $excludes = array(
+        $dirs = []; 
+        $excludes = [ 
             $webroot . DIRECTORY_SEPARATOR . "cpresources"
-        );
+        ];
 
         // Get volume paths for exclusion
         $volumes = AssetVersioner::getInstance()->volumes->getAllVolumes();
         foreach ($volumes as $volume) {
-            $path = Craft::getAlias($volume->path);
-            array_push($excludes, $path);
+            $dir = Craft::getAlias($volume->path);
+            array_push($excludes, $dir);
         }
 
-        $directories = new DirectoryIterator($webroot);
-        foreach ($directories as $fileinfo) {
+        $di = new DirectoryIterator($webroot);
+        foreach ($di as $fileinfo) {
             if (!$fileinfo->isDir() || $fileinfo->isDot()) {
                 continue;
             }
@@ -175,24 +188,26 @@ class Scan extends Component
                 }
             }
             if ($is_valid) {
-                array_push($paths, $path);
+                array_push($dirs, $path);
             }
         }
-        return $paths;
+        return $dirs;
     }
 
     
     /**
      * Get the paths of folders we want to scan
      * 
-     * TODO: add a setting that allows you to specify paths
+     * TODO allow the user to manually specify folders to search  
+     * 
+     * @return array a list of folders to search for files within
      */
-    private function getPaths() {
-        $folders = [];
-        if (count($folders) <= 0) {
-            $folders = $this->getDefaultPaths();
+    private function getDirs() : array {
+        $dirs = [];
+        if (count($dirs) <= 0) {
+            $dirs = $this->getDefaultDirs();
         }
-        return $folders;
+        return $dirs;
     }
 
     
@@ -203,15 +218,16 @@ class Scan extends Component
     public function scan($dry_run=false, $delete=false): array {
         $result = [];
 
-        $result["files"] = $this->searchPaths($this->getPaths());
+        $dirs = $this->getDirs();
+        $result["paths"] = $this->searchDirs($dirs);
         if ($delete) {
-            $result["deleted_files"] = $this->deleteVersions($result["files"], $dry_run);
+            $result["deleted_paths"] = $this->deleteVersions($result["paths"], $dry_run);
         }
-        $result["versioned_files"] = $this->createVersions($result["files"], $dry_run);
+        $result["versioned_paths"] = $this->createVersions($result["paths"], $dry_run);
 
         // Trigger event
         $event = new FilesVersionedEvent([
-            'versioned_files' => $result["versioned_files"],
+            'versioned_paths' => $result["versioned_paths"],
         ]);
         $this->trigger(self::EVENT_AFTER_FILES_VERSIONED, $event);
 
