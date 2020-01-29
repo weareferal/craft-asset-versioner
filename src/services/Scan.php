@@ -92,16 +92,29 @@ class Scan extends Component
      */
     private function createVersions($paths, $dry_run = false) : array {
         $webroot = Craft::getAlias('@webroot');
+        $dst_dir = Craft::getAlias('@webroot');
+        $prefix = AssetVersioner::getInstance()->getSettings()->staticVersioningPrefix;
+        if ($prefix) {
+            $dst_dir = $dst_dir . DIRECTORY_SEPARATOR . $prefix;
+        }
+
         $version_paths = [];
-        foreach($paths as $path) {
-            $version_path = $this->generateHashedPath($path);
-            if (!$dry_run) {
-                copy($path, $version_path);
+        foreach($paths as $src_abs_path) {
+            $src_rel_path = str_replace($webroot, '', $src_abs_path);
+            $hash_abs_path = $this->generateHashedPath($src_abs_path);
+            $hash_rel_path = str_replace($webroot, '', $hash_abs_path);
+            $dst_abs_path = $dst_dir . $hash_rel_path;
+            $dst_rel_path = str_replace($webroot, '', $dst_abs_path);
+
+            if (! $dry_run) {
+                $parts = pathinfo($dst_abs_path);
+                if (! file_exists($parts["dirname"])) {
+                    mkdir($parts["dirname"], 0744, true);
+                }
+                copy($src_abs_path, $dst_abs_path);
             }
-            // Relative paths only
-            $key = str_replace($webroot, '', $path);
-            $value = str_replace($webroot, '', $version_path);
-            $version_paths[$key] = $value;
+
+            $version_paths[$src_rel_path] = $dst_rel_path;
         }
         return $version_paths;
     }
