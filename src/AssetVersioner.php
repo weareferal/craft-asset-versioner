@@ -87,14 +87,4 @@ class AssetVersioner extends Plugin
     {
         return new Settings();
     }
-
-    protected function settingsHtml(): string
-    {
-        return Craft::$app->view->renderTemplate(
-            'asset-versioner/settings',
-            [
-                'settings' => $this->getSettings()
-            ]
-        );
-    }
 }

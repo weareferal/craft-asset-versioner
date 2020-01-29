@@ -31,7 +31,6 @@
     "extra": {
         "name": "Asset Versioner",
         "handle": "asset-versioner",
-        "hasCpSettings": true,
         "changelogUrl": "https://raw.githubusercontent.com/weareferal/asset-versioner/master/CHANGELOG.md",
         "components": {
             "scan": "weareferal\\assetversioner\\services\\Scan"
