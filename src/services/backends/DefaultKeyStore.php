@@ -14,8 +14,8 @@ class DefaultKeyStore extends KeyStore implements KeyStoreInterface {
         return $cache[$key];
     }
 
-    public function update($versioned_files) {
-        Craft::$app->cache->set("craft_assert_versioner", $versioned_files);
+    public function update($versioned_paths) {
+        Craft::$app->cache->set("craft_assert_versioner", $versioned_paths);
     }
 }
 ?>

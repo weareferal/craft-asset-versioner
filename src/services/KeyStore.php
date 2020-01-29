@@ -8,7 +8,7 @@ use craft\base\Component;
 
 interface KeyStoreInterface {
     public function get($path);
-    public function update($versioned_files);
+    public function update($versioned_paths);
 }
 
 /**

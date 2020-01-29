@@ -194,7 +194,6 @@ class Scan extends Component
         return $dirs;
     }
 
-    
     /**
      * Get the paths of folders we want to scan
      * 
@@ -209,16 +208,21 @@ class Scan extends Component
         }
         return $dirs;
     }
-
     
     /**
-     * Perform a scan
+     * Perform a scan that will find files and create versions of those files,
+     * optionally deleting old version files.
      * 
+     * @param boolean dry_run Skip actually deleting and versioning files
+     * @param boolean delete Actually delete old version files 
+     * @return array An array with details which paths were found, deleted
+     * and versioned 
      */
     public function scan($dry_run=false, $delete=false): array {
         $result = [];
 
         $dirs = $this->getDirs();
+
         $result["paths"] = $this->searchDirs($dirs);
         if ($delete) {
             $result["deleted_paths"] = $this->deleteVersions($result["paths"], $dry_run);
@@ -226,10 +230,12 @@ class Scan extends Component
         $result["versioned_paths"] = $this->createVersions($result["paths"], $dry_run);
 
         // Trigger event
-        $event = new FilesVersionedEvent([
-            'versioned_paths' => $result["versioned_paths"],
-        ]);
-        $this->trigger(self::EVENT_AFTER_FILES_VERSIONED, $event);
+        $this->trigger(
+            self::EVENT_AFTER_FILES_VERSIONED,
+            new FilesVersionedEvent([
+                'versioned_paths' => $result["versioned_paths"],
+            ])
+        );
 
         return $result;
     }

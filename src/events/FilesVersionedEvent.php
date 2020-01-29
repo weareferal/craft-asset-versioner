@@ -5,5 +5,5 @@ use yii\base\Event;
 
 class FilesVersionedEvent extends Event
 {
-    public $versioned_files = [];
+    public $versioned_paths = [];
 }

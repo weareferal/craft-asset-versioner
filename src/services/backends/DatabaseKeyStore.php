@@ -25,11 +25,11 @@ class DatabaseKeyStore extends KeyStore implements KeyStoreInterface {
         }
     }
 
-    public function update($versioned_files) {
+    public function update($versioned_paths) {
         $connection = Craft::$app->getDb();
         $transaction = $connection->beginTransaction();
         $rows = [];
-        foreach($versioned_files as $key=>$value) {
+        foreach($versioned_paths as $key=>$value) {
             array_push($rows, [$key, $value]);
         }
         try {

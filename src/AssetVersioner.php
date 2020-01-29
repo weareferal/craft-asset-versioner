@@ -44,7 +44,7 @@ class AssetVersioner extends Plugin
             ScanService::class,
             ScanService::EVENT_AFTER_FILES_VERSIONED,
             function (FilesVersionedEvent $event) {
-                $this->keystore->update($event->versioned_files);
+                $this->keystore->update($event->versioned_paths);
             }
         );
 
