@@ -71,12 +71,18 @@ To install the plugin, follow these instructions.
 
 Configuration is handled solely via a `config/asset-versioner.php` file. This is because asset versioning is almost always something you only want to do on your *production* instance and not on development or staging.
 
+By default, all asset versioning is disabled, so you need to enable it for the environments you are interested in.
+
 You can copy the `config.php` example from the repo. Here is an example:
 
 ```php
 <?php
 
 return [
+    '*' => [
+        'staticVersioningEnabled' => false,
+        'assetVersioningEnabled' => false,
+    ],
     'production' => [
         // Whether or not to enable versioning for static files specifically. 
         // Static files are the JS, CSS, png, jpeg, fonts ... that you use
@@ -85,7 +91,7 @@ return [
 
         // The extensions of the static files you are interested in being
         // hashed. In this example, we are only hashing JS, CSS and map files
-        'staticVersioningExtensions' => 'js,css,map',
+        'staticVersioningExtensions' => 'css,js,map',
 
         // The name of the folder within your webroot to storge copied, versioned
         // files. This makes it easy to add this folder to your gitignore so that
@@ -98,7 +104,7 @@ return [
 
         // The extensions of the asset files you are interested in being hashed.
         'assetVersioningExtensions' => 'png,jpg,jpeg,pdf'
-    ],
+    ]
 ];
 ```
 

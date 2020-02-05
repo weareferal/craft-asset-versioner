@@ -13,8 +13,8 @@ class Settings extends Model
     public $staticVersioningEnabled = false;
     public $assetVersioningEnabled = false;
     public $staticVersioningPrefix = 'versions';
-    public $staticVersioningExtensions = "png,jpeg,jpg,svg,webp,css,js,eot,woff,woff2,tff,map";
-    public $assetVersioningExtensions = "jpg,jpeg,png";
+    public $staticVersioningExtensions = "css,js,map";
+    public $assetVersioningExtensions = "png,jpg,jpeg,pdf";
 
     public function rules()
     {

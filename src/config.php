@@ -1,34 +1,30 @@
 <?php
-/**
- * Asset Versioner plugin for Craft CMS 3.x
- *
- * Automatically create cache-busting versions of all your assets
- *
- * @link      https://weareferal.com
- * @copyright Copyright (c) 2020 Timmy O'Mahony
- */
-
-/**
- * Asset Versioner config.php
- *
- * This file exists only as a template for the Asset Versioner settings.
- * It does nothing on its own.
- *
- * Don't edit this file, instead copy it to 'craft/config' as 'asset-versioner.php'
- * and make your changes there to override default settings.
- *
- * Once copied to 'craft/config', this file will be multi-environment aware as
- * well, so you can have different settings groups for each environment, just as
- * you do for 'general.php'
- */
 
 return [
-    'staging' => [
-        'staticVersioningEnabled' => true,
-        'assetVersioningEnabled' => true
+    '*' => [
+        'staticVersioningEnabled' => false,
+        'assetVersioningEnabled' => false,
     ],
     'production' => [
+        // Whether or not to enable versioning for static files specifically. 
+        // Static files are the JS, CSS, png, jpeg, fonts ... that you use
+        // part of your development workflow
         'staticVersioningEnabled' => true,
-        'assetVersioningEnabled' => true
-    ]
+
+        // The extensions of the static files you are interested in being
+        // hashed. In this example, we are only hashing JS, CSS and map files
+        'staticVersioningExtensions' => 'css,js,map',
+
+        // The name of the folder within your webroot to storge copied, versioned
+        // files. This makes it easy to add this folder to your gitignore so that
+        // generated version files are not in your repo.
+        'staticVersioningPrefix' => 'versions',
+
+        // Whether or not to enable versioning for uploaded Craft asset files.
+        // This may or may not be something you need.
+        'assetVersioningEnabled' => true,
+
+        // The extensions of the asset files you are interested in being hashed.
+        'assetVersioningExtensions' => 'png,jpg,jpeg,pdf'
+    ],
 ];
