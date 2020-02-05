@@ -90,8 +90,8 @@ return [
         'staticVersioningEnabled' => true,
 
         // The extensions of the static files you are interested in being
-        // hashed. In this example, we are only hashing JS, CSS and map files
-        'staticVersioningExtensions' => 'css,js,map',
+        // hashed. In this example, we are only hashing JS & CSS files
+        'staticVersioningExtensions' => 'css,js',
 
         // The name of the folder within your webroot to storge copied, versioned
         // files. This makes it easy to add this folder to your gitignore so that
@@ -188,5 +188,14 @@ You will need to change it to an absolute path or you will get 404s:
 ### Local files
 
 Currently, this plugin only works with local files in you filesystem's webroot.
+
+
+### Sourcemaps
+
+Currently these won't work with versioning enabled. See for more:
+
+https://github.com/weareferal/craft-asset-versioner/issues/3
+
+---
 
 Brought to you by [Feral](https://weareferal.com)
