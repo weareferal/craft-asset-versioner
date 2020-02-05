@@ -151,6 +151,42 @@ Files that are uploaded to Craft's volumes will be automatically versioned meani
 
 ## Caveats
 
+### Relative paths to non-versioned files
+
+Remember that all versioned assets are stored in a `versions` folder within you webroot. This means that if you have any relative paths to files that _aren't_ versioned, then they will most likely cause 404s in production as the relative path is no longer correct.
+
+If you have a CSS file that is versioned but references a non-versioned font file like so:
+
+```css
+@font-face {
+    font-family: 'Font';
+    src: url('../fonts/Font.eot');
+    src: url('../fonts/Font.eot?#iefix') format('embedded-opentype'),
+        url('../fonts/Font.woff2') format('woff2'),
+        url('../fonts/Font.woff') format('woff'),
+        url('../fonts/Font.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+```
+
+You will need to change it to an absolute path or you will get 404s:
+
+```css
+@font-face {
+    font-family: 'Font';
+    src: url('/fonts/Font.eot');
+    src: url('/fonts/Font.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/Font.woff2') format('woff2'),
+        url('/fonts/Font.woff') format('woff'),
+        url('/fonts/Font.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+```
+
+### Local files
+
 Currently, this plugin only works with local files in you filesystem's webroot.
 
 Brought to you by [Feral](https://weareferal.com)
