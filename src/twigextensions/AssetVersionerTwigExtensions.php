@@ -6,7 +6,8 @@ use Craft;
 
 use weareferal\assetversioner\AssetVersioner;
 
-class AssetVersionerTwigExtensions extends \Twig_Extension {
+class AssetVersionerTwigExtensions extends \Twig_Extension
+{
     public function getName()
     {
         return 'AssetVersioner';
@@ -19,7 +20,8 @@ class AssetVersionerTwigExtensions extends \Twig_Extension {
         ];
     }
 
-    public function getVersion($path) {
+    public function getVersion($path)
+    {
         try {
             $version = AssetVersioner::getInstance()->keystore->get($path);
             if ($version) {
@@ -31,5 +33,3 @@ class AssetVersionerTwigExtensions extends \Twig_Extension {
         return $path;
     }
 }
-
-?>
