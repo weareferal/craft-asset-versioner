@@ -20,12 +20,15 @@ class AssetVersionerTwigExtensions extends \Twig_Extension {
     }
 
     public function getVersion($path) {
-        $version = AssetVersioner::getInstance()->keystore->get($path);
-        if ($version) {
-            return $version;
-        } else {
-            return $path;
+        try {
+            $version = AssetVersioner::getInstance()->keystore->get($path);
+            if ($version) {
+                return $version;
+            }
+        } catch (\Exception $e) {
+            Craft::$app->getErrorHandler()->logException($e);
         }
+        return $path;
     }
 }
 
