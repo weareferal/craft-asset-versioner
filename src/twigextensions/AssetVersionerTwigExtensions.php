@@ -22,6 +22,9 @@ class AssetVersionerTwigExtensions extends \Twig_Extension
 
     public function getVersion($path)
     {
+        if (!AssetVersioner::getInstance()->settings->staticVersioningEnabled) {
+            return $path;
+        }
         try {
             $version = AssetVersioner::getInstance()->keystore->get($path);
             if ($version) {
