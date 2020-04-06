@@ -2,11 +2,7 @@
 
 Automatically generate unique hashed versions of static files and assets for efficient and reliable browser caching.
 
-![Asset Versioner Logo](resources/img/plugin-logo.png)
-
 ## Overview
-
-
 
 This plugin *automatically* generates cache-busting hashed versions for both the static files within your webroot (JS, CSS, fonts etc.) as well as uploaded volume assets.
 
@@ -188,7 +184,6 @@ You will need to change it to an absolute path or you will get 404s:
 ### Local files
 
 Currently, this plugin only works with local files in you filesystem's webroot.
-
 
 ### Sourcemaps
 
