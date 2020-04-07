@@ -1,18 +1,18 @@
-# Asset Versioner plugin for Craft CMS 3.x
+# Asset Versioner
+
+<img src="src/icon.svg" width="125px">
 
 Automatically generate unique hashed versions of static files and assets for efficient and reliable browser caching.
 
-![Asset Versioner Logo](resources/img/plugin-logo.png)
-
 ## Overview
 
+![Screenshot overview](resources/img/screenshot-1.jpg)
 
-
-This plugin *automatically* generates cache-busting hashed versions for both the static files within your webroot (JS, CSS, fonts etc.) as well as uploaded volume assets.
+This plugin automatically generates cache-busting hashed versions for both the static files within your webroot (JS, CSS, fonts etc.) as well as uploaded volume assets.
 
 Unlike other approaches, this means you don't have to handle anything as part of your development workflow (for example, using Gulp to create the hashed files, or maintaining a manifest file).
 
-For static files, it does this by creating a `scan` command that it run (automatically hopefully) on every deployment:
+For static files, it does this by creating a `scan` command that you can run on every deployment:
 
 ```sh
 ./craft asset-versioner/scan
@@ -23,10 +23,9 @@ This command searches for static files within your webroot and creates hashed ve
 ```twig
 <link rel="stylesheet" href="{{ '/css/styles.min.css' | version }}" type="text/css" charset="utf-8">
 
-<!-- This renders something like
+<!-- This renders something like -->
 
 <link rel="stylesheet" href="/versions/css/styles.min.f42a3a61335bbb10fbcecbab39b42772.css" type="text/css" charset="utf-8">
--->
 ```
 
 For asset files, the versioning happens automatically when a new file is uploaded, meaning you don't have to do anything at all to get versioning for free.
@@ -47,7 +46,7 @@ Asset Versioner aims to handle both of these cicumstances automatically.
 
 ## Requirements
 
-- Craft CMS 3 or later on Linux or MacOS (untested on Windows as of yet)
+This plugin requires Craft CMS 3.0.0 or later.
 
 ## Installation
 
@@ -69,7 +68,7 @@ To install the plugin, follow these instructions.
 
 ## Configuration
 
-Configuration is handled solely via a `config/asset-versioner.php` file. This is because asset versioning is almost always something you only want to do on your *production* instance and not on development or staging.
+Configuration is handled solely via a `config/asset-versioner.php` file (there is no settings page). This is because asset versioning is almost always something you only want to do on your *production* instance and not on development or staging.
 
 By default, all asset versioning is disabled, so you need to enable it for the environments you are interested in.
 
@@ -114,15 +113,19 @@ As mentioned above, there are two circumstances Asset Versioner handles:
 
 ### Static Files
 
-To generate versioned asset files, run the command:
+To generate versioned asset files, run the command on your local/staging/production machine
 
 ```sh
 ./craft asset-versioner/scan
 ```
 
-On your local/staging/production machine. You can automate this via Cron or your deployment script (for example in Forge).
+You can automate this via Cron or your deployment script (for example in Forge).
 
-This command will automatically search for all files in your webroot that match the extensions you are interested versioning (these extensions can be controlled via the `staticVersioningExtensions` settings). It will automatically exclude the `cpresources` folder plus any volumes in your webroot so as not to duplicate versioned files or rename anything else unessessarily.
+This command will automatically search for all files in your webroot that match the extensions you are interested versioning (these extensions can be controlled via the `staticVersioningExtensions` settings).
+
+It will automatically exclude the `cpresources` folder plus any volumes in your webroot so as not to duplicate versioned files or rename anything else unessessarily.
+
+![Screenshot overview](resources/img/screenshot-2.png)
 
 The files that it finds will be md5 hashed and that hash value will be appended to their filename, before the extension. These files will be saved within a `versions` folder within your webroot. You should therefore add this folder to your `.gitignore`:
 
@@ -150,6 +153,8 @@ Behind the scenes the plugin manages a keystore in the Yii cache of all files th
 Files that are uploaded to Craft's volumes will be automatically versioned meaning you don't have to do anything at all for this to work.
 
 ## Caveats
+
+There are a few caveats you should be aware of when developing with this plugin.
 
 ### Relative paths to non-versioned files
 
@@ -189,13 +194,14 @@ You will need to change it to an absolute path or you will get 404s:
 
 Currently, this plugin only works with local files in you filesystem's webroot.
 
-
 ### Sourcemaps
 
 Currently these won't work with versioning enabled. See for more:
 
 https://github.com/weareferal/craft-asset-versioner/issues/3
 
----
+## Support
 
-Brought to you by [Feral](https://weareferal.com)
+<img src="resources/img/feral-logo.svg" width="250px">
+
+Brought to you by [Feral](https://weareferal.com). Any problems email [timmy@weareferal.com](mailto:timmy@weareferal.com?subject=Craft%20Env%20Sync%20Question) or leave an issue on Github.
