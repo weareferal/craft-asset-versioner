@@ -1,10 +1,12 @@
 # Asset Versioner
 
-Automatically generate unique hashed versions of static files and assets for efficient and reliable browser caching.
-
 <img src="src/icon.svg" width="125px">
 
+Automatically generate unique hashed versions of static files and assets for efficient and reliable browser caching.
+
 ## Overview
+
+![Screenshot overview](resources/img/screenshot-1.jpg)
 
 This plugin automatically generates cache-busting hashed versions for both the static files within your webroot (JS, CSS, fonts etc.) as well as uploaded volume assets.
 
