@@ -23,10 +23,9 @@ This command searches for static files within your webroot and creates hashed ve
 ```twig
 <link rel="stylesheet" href="{{ '/css/styles.min.css' | version }}" type="text/css" charset="utf-8">
 
-<!-- This renders something like
+<!-- This renders something like -->
 
 <link rel="stylesheet" href="/versions/css/styles.min.f42a3a61335bbb10fbcecbab39b42772.css" type="text/css" charset="utf-8">
--->
 ```
 
 For asset files, the versioning happens automatically when a new file is uploaded, meaning you don't have to do anything at all to get versioning for free.
