@@ -1,14 +1,16 @@
-# Asset Versioner plugin for Craft CMS 3.x
+# Asset Versioner
 
 Automatically generate unique hashed versions of static files and assets for efficient and reliable browser caching.
 
+<img src="src/icon.svg" width="125px">
+
 ## Overview
 
-This plugin *automatically* generates cache-busting hashed versions for both the static files within your webroot (JS, CSS, fonts etc.) as well as uploaded volume assets.
+This plugin automatically generates cache-busting hashed versions for both the static files within your webroot (JS, CSS, fonts etc.) as well as uploaded volume assets.
 
 Unlike other approaches, this means you don't have to handle anything as part of your development workflow (for example, using Gulp to create the hashed files, or maintaining a manifest file).
 
-For static files, it does this by creating a `scan` command that it run (automatically hopefully) on every deployment:
+For static files, it does this by creating a `scan` command that you can run on every deployment:
 
 ```sh
 ./craft asset-versioner/scan
@@ -43,7 +45,7 @@ Asset Versioner aims to handle both of these cicumstances automatically.
 
 ## Requirements
 
-- Craft CMS 3 or later on Linux or MacOS (untested on Windows as of yet)
+This plugin requires Craft CMS 3.0.0 or later.
 
 ## Installation
 
@@ -191,6 +193,8 @@ Currently these won't work with versioning enabled. See for more:
 
 https://github.com/weareferal/craft-asset-versioner/issues/3
 
----
+## Support
 
-Brought to you by [Feral](https://weareferal.com)
+<img src="resources/img/feral-logo.svg" width="250px">
+
+Brought to you by [Feral](https://weareferal.com). Any problems email [timmy@weareferal.com](mailto:timmy@weareferal.com?subject=Craft%20Env%20Sync%20Question) or leave an issue on Github.
